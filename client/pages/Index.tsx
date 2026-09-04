@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Activity, ArrowDownRight, ArrowUpRight, BarChart3, Bot, CheckCircle2, ChevronRight, CircleDollarSign, Gauge, LineChart, LockKeyhole, PlugZap, RefreshCw, ShieldCheck, Sparkles, TrendingUp, Wifi, X } from "lucide-react";
+import { Activity, BarChart3, Bot, ChevronRight, CircleDollarSign, Gauge, LockKeyhole, PlugZap, RefreshCw, ShieldCheck, Sparkles, TrendingUp, Wifi, X, type LucideIcon } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useMt5Account, useMt5Connect, useMt5Market, useMt5Positions, useMt5Status, WATCHLIST } from "@/hooks/use-mt5";
 import { cn } from "@/lib/utils";
@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 const fallbackQuotes = [{ symbol: "XAUUSDm", bid: 3612.48, ask: 3612.76, changePercent: 0.82 }, { symbol: "EURUSDm", bid: 1.0873, ask: 1.0875, changePercent: 0.34 }, { symbol: "GBPUSDm", bid: 1.2715, ask: 1.2718, changePercent: 0.42 }, { symbol: "US30m", bid: 44823.2, ask: 44828.1, changePercent: 0.56 }, { symbol: "BTCUSDm", bid: 68742.1, ask: 68770.5, changePercent: 1.23 }];
 const sparkline = "M0 72 C15 65 18 73 30 58 S45 62 55 43 S67 48 79 36 S94 46 105 27 S120 34 133 21 S145 27 160 12";
 
-function Card({ title, icon: Icon, action, children, className }: { title: string; icon?: typeof Activity; action?: string; children: React.ReactNode; className?: string }) { return <section className={cn("rounded-xl border border-border bg-card shadow-card", className)}><div className="flex items-center justify-between border-b border-border px-4 py-3"><div className="flex items-center gap-2 text-sm font-bold">{Icon && <Icon className="h-4 w-4 text-primary" />}{title}</div>{action && <button className="text-[11px] font-semibold text-primary hover:underline">{action} <ChevronRight className="inline h-3 w-3" /></button>}</div>{children}</section> }
+function Card({ title, icon: Icon, action, children, className }: { title: string; icon?: LucideIcon; action?: string; children: React.ReactNode; className?: string }) { return <section className={cn("rounded-xl border border-border bg-card shadow-card", className)}><div className="flex items-center justify-between border-b border-border px-4 py-3"><div className="flex items-center gap-2 text-sm font-bold">{Icon && <Icon className="h-4 w-4 text-primary" />}{title}</div>{action && <button className="text-[11px] font-semibold text-primary hover:underline">{action} <ChevronRight className="inline h-3 w-3" /></button>}</div>{children}</section> }
 function Stat({ label, value, sub, tone = "text-foreground" }: { label: string; value: string; sub: string; tone?: string }) { return <div><p className="text-[11px] text-muted-foreground">{label}</p><p className={cn("mt-1 text-xl font-extrabold tracking-tight", tone)}>{value}</p><p className="mt-1 text-[10px] text-muted-foreground">{sub}</p></div> }
 
 export default function Index() {
