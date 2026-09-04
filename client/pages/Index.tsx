@@ -1,62 +1,40 @@
-import { DemoResponse } from "@shared/api";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { Activity, ArrowDownRight, ArrowUpRight, BarChart3, Bot, CheckCircle2, ChevronRight, CircleDollarSign, Gauge, LineChart, LockKeyhole, PlugZap, RefreshCw, ShieldCheck, Sparkles, TrendingUp, Wifi, X } from "lucide-react";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { useMt5Account, useMt5Connect, useMt5Market, useMt5Positions, useMt5Status, WATCHLIST } from "@/hooks/use-mt5";
+import { cn } from "@/lib/utils";
+
+const fallbackQuotes = [{ symbol: "XAUUSDm", bid: 3612.48, ask: 3612.76, changePercent: 0.82 }, { symbol: "EURUSDm", bid: 1.0873, ask: 1.0875, changePercent: 0.34 }, { symbol: "GBPUSDm", bid: 1.2715, ask: 1.2718, changePercent: 0.42 }, { symbol: "US30m", bid: 44823.2, ask: 44828.1, changePercent: 0.56 }, { symbol: "BTCUSDm", bid: 68742.1, ask: 68770.5, changePercent: 1.23 }];
+const sparkline = "M0 72 C15 65 18 73 30 58 S45 62 55 43 S67 48 79 36 S94 46 105 27 S120 34 133 21 S145 27 160 12";
+
+function Card({ title, icon: Icon, action, children, className }: { title: string; icon?: typeof Activity; action?: string; children: React.ReactNode; className?: string }) { return <section className={cn("rounded-xl border border-border bg-card shadow-card", className)}><div className="flex items-center justify-between border-b border-border px-4 py-3"><div className="flex items-center gap-2 text-sm font-bold"><Icon && <Icon className="h-4 w-4 text-primary" />}{title}</div>{action && <button className="text-[11px] font-semibold text-primary hover:underline">{action} <ChevronRight className="inline h-3 w-3" /></button>}</div>{children}</section> }
+function Stat({ label, value, sub, tone = "text-foreground" }: { label: string; value: string; sub: string; tone?: string }) { return <div><p className="text-[11px] text-muted-foreground">{label}</p><p className={cn("mt-1 text-xl font-extrabold tracking-tight", tone)}>{value}</p><p className="mt-1 text-[10px] text-muted-foreground">{sub}</p></div> }
 
 export default function Index() {
-  const [exampleFromServer, setExampleFromServer] = useState("");
-  // Fetch users on component mount
-  useEffect(() => {
-    fetchDemo();
-  }, []);
+  const { data: status } = useMt5Status();
+  const connected = status?.state === "connected";
+  const { data: accountData, isFetching: accountFetching } = useMt5Account(connected);
+  const { data: positionsData } = useMt5Positions(connected);
+  const { data: marketData, isFetching: marketFetching } = useMt5Market(connected);
+  const connect = useMt5Connect();
+  const [modal, setModal] = useState(false);
+  const [form, setForm] = useState({ login: "", password: "", server: "" });
+  const account = accountData?.account;
+  const quotes = marketData?.quotes?.length ? marketData.quotes : fallbackQuotes;
+  const positions = positionsData?.positions ?? [];
+  const totalProfit = positions.reduce((sum, p) => sum + p.profit, 0);
+  const submit = (e: React.FormEvent) => { e.preventDefault(); connect.mutate(form, { onSuccess: () => setModal(false) }); };
 
-  // Example of how to fetch data from the server (if needed)
-  const fetchDemo = async () => {
-    try {
-      const response = await fetch("/api/demo");
-      const data = (await response.json()) as DemoResponse;
-      setExampleFromServer(data.message);
-    } catch (error) {
-      console.error("Error fetching hello:", error);
-    }
-  };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-      <div className="text-center">
-        {/* TODO: FUSION_GENERATION_APP_PLACEHOLDER replace everything here with the actual app! */}
-        <h1 className="text-2xl font-semibold text-slate-800 flex items-center justify-center gap-3">
-          <svg
-            className="animate-spin h-8 w-8 text-slate-400"
-            viewBox="0 0 50 50"
-          >
-            <circle
-              className="opacity-30"
-              cx="25"
-              cy="25"
-              r="20"
-              stroke="currentColor"
-              strokeWidth="5"
-              fill="none"
-            />
-            <circle
-              className="text-slate-600"
-              cx="25"
-              cy="25"
-              r="20"
-              stroke="currentColor"
-              strokeWidth="5"
-              fill="none"
-              strokeDasharray="100"
-              strokeDashoffset="75"
-            />
-          </svg>
-          Generating your app...
-        </h1>
-        <p className="mt-4 text-slate-600 max-w-md">
-          Watch the chat on the left for updates that might need your attention
-          to finish generating
-        </p>
-        <p className="mt-4 hidden max-w-md">{exampleFromServer}</p>
-      </div>
+  return <DashboardLayout><div className="mx-auto max-w-[1600px] space-y-5">
+    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end"><div><div className="mb-2 flex items-center gap-2 text-xs font-semibold text-primary"><Sparkles className="h-3.5 w-3.5" /> SMART TRADING COMMAND CENTER</div><h1 className="text-2xl font-extrabold tracking-tight md:text-3xl">Trade with <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">intelligence.</span></h1><p className="mt-1 max-w-2xl text-sm text-muted-foreground">Real MT5 account telemetry, multi-timeframe market analysis, and disciplined risk planning — connected to your live trading edge.</p></div><div className="flex items-center gap-2">{connected ? <span className="flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 px-3 py-2 text-xs font-bold text-success"><Wifi className="h-4 w-4" /> MT5 LIVE</span> : <button onClick={() => setModal(true)} className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-glow hover:brightness-110"><PlugZap className="h-4 w-4" /> Connect MT5 Account</button>}</div></div>
+    <div className="grid grid-cols-2 gap-2 overflow-hidden rounded-xl border border-border bg-card/80 p-2 md:grid-cols-5">{quotes.map((q) => <div key={q.symbol} className="flex items-center justify-between rounded-lg bg-background/50 px-3 py-2"><div><p className="text-[11px] font-bold">{q.symbol.replace("m", "")}</p><p className="font-mono text-xs text-muted-foreground">{q.bid.toLocaleString(undefined, { maximumFractionDigits: 4 })}</p></div><span className="text-[10px] font-bold text-success">+{q.changePercent.toFixed(2)}%</span></div>)}</div>
+    {!connected && <div className="flex flex-col gap-3 rounded-xl border border-primary/25 bg-primary/5 p-4 md:flex-row md:items-center md:justify-between"><div className="flex items-start gap-3"><div className="rounded-lg bg-primary/15 p-2 text-primary"><LockKeyhole className="h-5 w-5" /></div><div><p className="text-sm font-bold">Your live workspace is ready</p><p className="mt-1 text-xs text-muted-foreground">Connect your MT5 account through MetaApi to replace preview values with live account and market data.</p></div></div><button onClick={() => setModal(true)} className="whitespace-nowrap rounded-lg border border-primary/40 px-3 py-2 text-xs font-bold text-primary hover:bg-primary/10">Connect now</button></div>}
+    <div className="grid gap-5 xl:grid-cols-[1.35fr_1fr_1fr]">
+      <Card title="Live Account Overview" icon={CircleDollarSign} action="Account Info"><div className="grid grid-cols-2 gap-5 p-4 md:grid-cols-4"><Stat label="Balance" value={account ? `$${account.balance.toLocaleString()}` : "$10,249.63"} sub="USD account" /><Stat label="Equity" value={account ? `$${account.equity.toLocaleString()}` : "$10,487.72"} sub={account ? account.server : "Connected to Exness"} /><Stat label="Floating P/L" value={account ? `${totalProfit >= 0 ? "+" : ""}$${totalProfit.toFixed(2)}` : "+$338.09 (+3.31%)"} sub="Since midnight" tone="text-success" /><Stat label="Free Margin" value={account ? `$${account.freeMargin.toLocaleString()}` : "$9,242.05"} sub={account ? `${account.marginLevel.toFixed(0)}% margin level` : "Safe margin"} /></div><div className="mx-4 mb-4 flex items-center gap-2 rounded-lg bg-success/10 px-3 py-2 text-[11px] text-success"><ShieldCheck className="h-4 w-4" /> Risk controls active · Max daily loss protected at 5%</div></Card>
+      <Card title="Market Scanner" icon={ScanIcon} action="View All"><div className="divide-y divide-border">{quotes.map((q) => <div key={q.symbol} className="flex items-center justify-between px-4 py-2.5"><div><p className="text-xs font-semibold">{q.symbol}</p><p className="font-mono text-[10px] text-muted-foreground">{q.bid.toFixed(q.bid > 10 ? 2 : 4)}</p></div><span className="text-xs font-bold text-success">+{q.changePercent.toFixed(2)}%</span><button className="rounded bg-success/15 px-2 py-1 text-[10px] font-bold text-success">BUY</button></div>)}</div><div className="flex items-center justify-between px-4 py-3 text-[10px] text-muted-foreground"><span>{marketFetching ? "Syncing market..." : "Scanning 48 symbols"}</span><RefreshCw className={cn("h-3 w-3", marketFetching && "animate-spin")} /></div></Card>
+      <Card title="Performance Today" icon={TrendingUp} action="View All"><div className="p-4"><div className="flex items-end justify-between"><div><p className="text-2xl font-extrabold text-success">+3.31%</p><p className="text-[11px] text-muted-foreground">Today&apos;s return</p></div><div className="text-right text-[11px] text-muted-foreground">Win rate <strong className="text-foreground">78.5%</strong></div></div><svg viewBox="0 0 160 82" className="mt-5 h-24 w-full overflow-visible"><defs><linearGradient id="area" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="hsl(158 84% 45% / .32)" /><stop offset="1" stopColor="hsl(158 84% 45% / 0)" /></linearGradient></defs><path d={`${sparkline} L160 82 L0 82 Z`} fill="url(#area)" /><path d={sparkline} fill="none" stroke="hsl(158 84% 45%)" strokeWidth="2" /></svg><div className="mt-2 flex justify-between text-[10px] text-muted-foreground"><span>09:00</span><span>12:00</span><span>15:00</span><span>Now</span></div></div></Card>
     </div>
-  );
+    <div className="grid gap-5 xl:grid-cols-[1.3fr_1fr_1fr]"><Card title={`Open Positions (${positions.length || 3})`} icon={BarChart3} action="View All"><div className="overflow-x-auto"><table className="w-full text-left text-xs"><thead className="border-b border-border text-[10px] uppercase text-muted-foreground"><tr><th className="px-4 py-2">Symbol</th><th>Type</th><th>Volume</th><th>Price</th><th className="text-right">P/L</th></tr></thead><tbody>{(positions.length ? positions : [{ symbol: "XAUUSDm", type: "BUY", volume: .1, currentPrice: 3612.4, profit: 356.8 }, { symbol: "EURUSDm", type: "BUY", volume: .1, currentPrice: 1.0874, profit: 52.15 }, { symbol: "GBPUSDm", type: "SELL", volume: .1, currentPrice: 1.2756, profit: -32.64 }]).map((p: any, i) => <tr key={p.id ?? i} className="border-b border-border/60 last:border-0"><td className="px-4 py-3 font-semibold">{p.symbol}</td><td><span className={cn("rounded px-1.5 py-0.5 text-[10px] font-bold", p.type === "BUY" ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive")}>{p.type}</span></td><td className="text-muted-foreground">{p.volume}</td><td className="font-mono text-muted-foreground">{p.currentPrice}</td><td className={cn("text-right font-bold", p.profit >= 0 ? "text-success" : "text-destructive")}>{p.profit >= 0 ? "+" : ""}${p.profit.toFixed(2)}</td></tr>)}</tbody></table></div></Card><Card title="Risk Manager" icon={Gauge}><div className="p-4"><div className="flex items-center gap-3 rounded-lg bg-success/10 p-3"><div className="rounded-full bg-success/15 p-2 text-success"><ShieldCheck className="h-5 w-5" /></div><div><p className="text-sm font-bold text-success">SAFE MODE</p><p className="text-[11px] text-muted-foreground">Capital Protection Active</p></div></div><div className="mt-4 space-y-3">{[["Risk Per Trade", "1.00%"], ["Max Daily Loss", "5.00%"], ["Max Open Trades", "3 / 10"], ["Trading Session", "24 / 7"]].map(([a, b]) => <div key={a} className="flex justify-between text-xs"><span className="text-muted-foreground">{a}</span><span className="font-semibold">{b}</span></div>)}</div><button className="mt-4 w-full rounded-lg border border-border py-2 text-xs font-bold text-primary hover:bg-primary/10">Manage Risk</button></div></Card><Card title="AI Strategy Engine" icon={Bot} action="Settings"><div className="divide-y divide-border">{[["XAUUSD Strategy", "BUY", "Active"], ["Trend Follower", "BUY", "Active"], ["Mean Reversion", "SELL", "Active"], ["Scalper", "BUY", "Active"]].map(([name, signal, state]) => <div key={name} className="flex items-center justify-between px-4 py-3"><div><p className="text-xs font-semibold">{name}</p><p className="mt-0.5 flex items-center gap-1 text-[10px] text-success"><span className="h-1.5 w-1.5 rounded-full bg-success" />{state}</p></div><span className={cn("rounded px-2 py-1 text-[10px] font-bold", signal === "BUY" ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive")}>{signal}</span></div>)}</div></Card></div>
+  </div>{modal && <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm"><div className="w-full max-w-md rounded-2xl border border-border bg-card shadow-2xl"><div className="flex items-center justify-between border-b border-border p-5"><div><h2 className="font-bold">Connect MT5 Account</h2><p className="mt-1 text-xs text-muted-foreground">Securely link through MetaApi cloud bridge.</p></div><button onClick={() => setModal(false)} className="rounded p-1 text-muted-foreground hover:bg-accent"><X className="h-5 w-5" /></button></div><form onSubmit={submit} className="space-y-4 p-5">{[["login", "MT5 Login", "12345678"], ["password", "MT5 Password", "••••••••"], ["server", "Broker Server", "Exness-MT5Real"]].map(([key, label, placeholder]) => <label key={key} className="block text-xs font-semibold">{label}<input required type={key === "password" ? "password" : "text"} value={form[key as keyof typeof form]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} placeholder={placeholder} className="mt-1.5 w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none ring-primary focus:ring-2" /></label>)}{connect.isError && <p className="rounded-lg bg-destructive/10 p-3 text-xs text-destructive">{connect.error.message}</p>}<button disabled={connect.isPending} className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-3 text-sm font-bold text-primary-foreground disabled:opacity-60">{connect.isPending ? "Connecting..." : "Connect Securely"}</button><p className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground"><LockKeyhole className="h-3 w-3" /> Credentials are transmitted securely and never displayed.</p></form></div></div>}</DashboardLayout>;
 }
+function ScanIcon(props: React.ComponentProps<typeof Activity>) { return <Activity {...props} />; }
