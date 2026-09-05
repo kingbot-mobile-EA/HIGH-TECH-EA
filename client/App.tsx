@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Placeholder from "./pages/Placeholder";
+import Strategies from "./pages/Strategies";
 
 const queryClient = new QueryClient();
 
@@ -21,7 +22,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/scanner" element={<Placeholder />} />
-          <Route path="/strategies" element={<Placeholder />} />
+          <Route path="/strategies" element={<Strategies />} />
           <Route path="/trades/open" element={<Placeholder />} />
           <Route path="/trades/history" element={<Placeholder />} />
           <Route path="/performance" element={<Placeholder />} />
