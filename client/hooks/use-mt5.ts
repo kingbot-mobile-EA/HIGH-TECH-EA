@@ -13,8 +13,17 @@ export function useMt5Status() {
   return useQuery({
     queryKey: ["mt5-status"],
     queryFn: async () => {
-      const res = await fetch("/api/mt5/status");
-      return (await res.json()) as Mt5StatusResponse;
+      try {
+        const res = await fetch("/api/mt5/status");
+        if (!res.ok) throw new Error("MT5 status unavailable");
+        return (await res.json()) as Mt5StatusResponse;
+      } catch {
+        return {
+          configured: false,
+          state: "not_configured",
+          message: "MT5 service is unavailable",
+        } satisfies Mt5StatusResponse;
+      }
     },
     refetchInterval: 5000,
   });

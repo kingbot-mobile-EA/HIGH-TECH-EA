@@ -42,8 +42,15 @@ if (!rootContainer) throw new Error("Root container not found");
 
 const appGlobal = globalThis as typeof globalThis & {
   __traderBotTechRoot?: ReturnType<typeof createRoot>;
+  __traderBotTechContainer?: HTMLElement;
 };
+
+if (appGlobal.__traderBotTechRoot && appGlobal.__traderBotTechContainer !== rootContainer) {
+  appGlobal.__traderBotTechRoot.unmount();
+  appGlobal.__traderBotTechRoot = undefined;
+}
 
 const root = appGlobal.__traderBotTechRoot ?? createRoot(rootContainer);
 appGlobal.__traderBotTechRoot = root;
+appGlobal.__traderBotTechContainer = rootContainer;
 root.render(<App />);
