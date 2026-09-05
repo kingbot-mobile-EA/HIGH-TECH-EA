@@ -37,4 +37,13 @@ const App = () => (
   </QueryClientProvider>
 );
 
-createRoot(document.getElementById("root")!).render(<App />);
+const rootContainer = document.getElementById("root");
+if (!rootContainer) throw new Error("Root container not found");
+
+const appGlobal = globalThis as typeof globalThis & {
+  __traderBotTechRoot?: ReturnType<typeof createRoot>;
+};
+
+const root = appGlobal.__traderBotTechRoot ?? createRoot(rootContainer);
+appGlobal.__traderBotTechRoot = root;
+root.render(<App />);
